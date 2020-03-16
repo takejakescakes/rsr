@@ -1,4 +1,4 @@
-from blog_example import create_app
+#from blog_example import create_app
 
 app = create_app()
 
