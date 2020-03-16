@@ -1,23 +1,35 @@
-import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
+from blog_example.config import Config
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'e1487f9bb26793dcdf3a8350295aa8c1'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
-db = SQLAlchemy(app)
-bc = Bcrypt(app)
-log = LoginManager(app)
-log.login_view = 'login'
+
+db = SQLAlchemy()
+bc = Bcrypt()
+log = LoginManager()
+log.login_view = 'users.login'
 log.login_message_category = 'info'
-app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'takejakescake'
-app.config['MAIL_PASSWORD'] = 'zffhpcpaxoadfzyy'
-mail = Mail(app)
+mail = Mail()
 
-from blog_example import routes
+
+def create_app(config_class=Config):
+	app = Flask(__name__)
+	app.config.from_object(Config)
+
+	db.init_app(app)
+	bc.init_app(app)
+	log.init_app(app)
+	mail.init_app(app)
+
+	from blog_example.users.routes import u
+	from blog_example.posts.routes import p
+	from blog_example.main.routes import m
+	from blog_example.errors.handlers import errors
+	app.register_blueprint(u)
+	app.register_blueprint(p)
+	app.register_blueprint(m)
+	app.register_blueprint(errors)
+
+	return app
